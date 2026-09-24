@@ -1,4 +1,4 @@
-# Scenario 04 — Hangman Challenge
+# Scenario 16 — Hangman Challenge
 
 A multi-round terminal word-guessing game with categories, hints, scoring, and streaks.
 
