@@ -60,14 +60,36 @@ class HangmanGame:
         while self.lives > 0 and not self.won():
             print("\nWord:", self.masked())
             print("Wrong:", " ".join(sorted(self.wrong)) or "-")
-            print("Lives:", self.lives, "Score:", self.score, "Streak:", self.streak)
+            print(f"Lives: {self.lives}  Score: {self.score}  Streak: {self.streak}")
+            print(f"Difficulty: {self.difficulty}")
             raw = input("Letter, /hint, or /quit: ").strip().lower()
-            if raw == "/quit":
-                return False
-            if raw == "/hint":
-                hint = self.use_hint()
-                print(hint if hint else "Hint already used.")
+
+            # Empty input — just re-prompt
+            if not raw:
                 continue
+
+            # Handle slash commands
+            if raw.startswith("/"):
+                if raw == "/quit":
+                    return False
+                if raw == "/hint":
+                    hint = self.use_hint()
+                    print(hint if hint else "Hint already used this round.")
+                else:
+                    print(f"Unknown command '{raw}'. Use /hint or /quit.")
+                continue
+
+            # Reject multi-character input
+            if len(raw) != 1:
+                print("Please enter a single letter.")
+                continue
+
+            # Reject non-alphabetic characters
+            if not raw.isalpha():
+                print("Only letters a-z are accepted.")
+                continue
+
+            # Valid single letter — process the guess
             print(self.guess(raw))
 
         if self.won():
