@@ -2,12 +2,19 @@ import random
 from words import WORDS, HINTS
 from stats import SessionStats
 
+DIFFICULTIES = {
+    "easy":   {"lives": 8, "multiplier": 1.0, "hint_penalty": 1},
+    "medium": {"lives": 6, "multiplier": 1.5, "hint_penalty": 2},
+    "hard":   {"lives": 4, "multiplier": 2.0, "hint_penalty": 3},
+}
+
 
 class HangmanGame:
     def __init__(self):
         self.score = 0
         self.streak = 0
         self.category = "technology"
+        self.difficulty = "medium"
         self.secret = ""
         self.guessed = set()
         self.wrong = set()
@@ -19,7 +26,7 @@ class HangmanGame:
         self.secret = random.choice(WORDS[self.category])
         self.guessed.clear()
         self.wrong.clear()
-        self.lives = 6
+        self.lives = DIFFICULTIES[self.difficulty]["lives"]
         self.hint_used = False
 
     def masked(self):
@@ -44,7 +51,8 @@ class HangmanGame:
         if self.hint_used:
             return None
         self.hint_used = True
-        self.score = max(0, self.score - 1)
+        penalty = DIFFICULTIES[self.difficulty]["hint_penalty"]
+        self.score = max(0, self.score - penalty)
         return HINTS.get(self.secret, "No hint available.")
 
     def play_round(self):
@@ -64,8 +72,13 @@ class HangmanGame:
 
         if self.won():
             self.streak += 1
-            self.score += 5 + self.streak
-            print("Solved:", self.secret)
+            mult = DIFFICULTIES[self.difficulty]["multiplier"]
+            base = 5 + self.streak
+            earned = int(base * mult)
+            if self.hint_used:
+                earned = max(1, earned - DIFFICULTIES[self.difficulty]["hint_penalty"])
+            self.score += earned
+            print(f"Solved: {self.secret} (+{earned} points)")
             self.stats.record(True, self.streak)
             return True
 
@@ -86,6 +99,13 @@ class HangmanGame:
                 print("Unknown category.")
                 continue
             self.category = raw
+
+            print("Difficulties:", ", ".join(DIFFICULTIES))
+            diff = input("Choose difficulty [easy/medium/hard]: ").strip().lower()
+            if diff in DIFFICULTIES:
+                self.difficulty = diff
+            else:
+                print(f"Unknown difficulty. Using {self.difficulty}.")
             if not self.play_round():
                 return
             again = input("Another round? [y/n]: ").strip().lower()
