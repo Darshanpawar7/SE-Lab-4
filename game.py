@@ -1,5 +1,6 @@
 import random
 from words import WORDS, HINTS
+from stats import SessionStats
 
 
 class HangmanGame:
@@ -12,6 +13,7 @@ class HangmanGame:
         self.wrong = set()
         self.lives = 6
         self.hint_used = False
+        self.stats = SessionStats()
 
     def start_round(self):
         self.secret = random.choice(WORDS[self.category])
@@ -64,10 +66,12 @@ class HangmanGame:
             self.streak += 1
             self.score += 5 + self.streak
             print("Solved:", self.secret)
+            self.stats.record(True, self.streak)
             return True
 
         self.streak = 0
         print("Out of lives. The word was:", self.secret)
+        self.stats.record(False, self.streak)
         return True
 
     def run(self):
@@ -86,5 +90,10 @@ class HangmanGame:
                 return
             again = input("Another round? [y/n]: ").strip().lower()
             if again != "y":
-                print("Final score:", self.score, " Streak:", self.streak)
+                print("\n--- Session Summary ---")
+                print("Final score:", self.score)
+                print("Current streak:", self.streak)
+                print("Rounds played:", self.stats.rounds)
+                print("Rounds won:", self.stats.wins)
+                print("Best streak:", self.stats.best_streak)
                 return
